@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
 
-    private Typeface trebuchetms;
+    private Typeface re;
 
     private boolean paused = false;
     private long frameCount = 0;
@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
         nanosecondsPerFrame = (long)1e9 / FRAMES_PER_SECOND;
 
         //initialize fonts
-        trebuchetms = Typeface.createFromAsset(getAssets(), "fonts/TrebuchetMS.ttf");
+        re = Typeface.createFromAsset(getAssets(), "fonts/Rounded_Elegance.ttf");
 
         canvas.drawColor(Color.BLACK);
 
@@ -170,7 +170,7 @@ public class MainActivity extends Activity {
     private Paint newPaint(int color) {
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(color);
-        p.setTypeface(trebuchetms);
+        p.setTypeface(re);
 
         return p;
     }
