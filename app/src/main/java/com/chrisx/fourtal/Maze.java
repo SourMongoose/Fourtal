@@ -1,9 +1,12 @@
 package com.chrisx.fourtal;
 
+import java.util.ArrayList;
+
 class Maze {
     private final String ALPHABET = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private int[] arr;
+    private int moves;
 
     Maze(String s) {
         //ex. #KNHCADBEIGPOLOCMMJFQLGNHBQPEADKIFJ#
@@ -11,10 +14,51 @@ class Maze {
         for (int i = 0; i < s.length(); i++) {
             arr[i] = ALPHABET.indexOf(s.charAt(i));
         }
+
+        moves = calcMoves();
+    }
+
+    private int calcMoves() {
+        int[] dist = new int[arr.length];
+        for (int i = 0; i < dist.length; i++) dist[i] = -1;
+        dist[0] = 0;
+
+        ArrayList<Integer> q = new ArrayList<>();
+        q.add(0);
+        while (!q.isEmpty()) {
+            int curr = q.get(0);
+            q.remove(0);
+
+            //left
+            if (curr % size() > 0 && dist[match(curr - 1)] == -1) {
+                dist[match(curr - 1)] = dist[curr] + 1;
+                q.add(match(curr - 1));
+            }
+            //right
+            if ((curr + 1) % size() > 0 && dist[match(curr + 1)] == -1) {
+                dist[match(curr + 1)] = dist[curr] + 1;
+                q.add(match(curr + 1));
+            }
+            //up
+            if (curr >= size() && dist[match(curr - size())] == -1) {
+                dist[match(curr - size())] = dist[curr] + 1;
+                q.add(match(curr - size()));
+            }
+            //down
+            if (curr + size() < arr.length && dist[match(curr + size())] == -1) {
+                dist[match(curr + size())] = dist[curr] + 1;
+                q.add(match(curr + size()));
+            }
+        }
+
+        return dist[dist.length-1];
     }
 
     int size() {
         return (int)Math.round(Math.sqrt(arr.length));
+    }
+    int getMoves() {
+        return moves;
     }
 
     int match(int i) {

@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
     private float scaleFactor;
 
     static Bitmap[] portals4, portals6;
-    static Bitmap dot;
+    static Bitmap dot, cross;
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
 
     private Player player;
     private Maze maze;
+    private boolean four = true;
     private String[] tests_4 = {
             "#CDBFCAEFBAGEGD#",
             "#EGCCFDEFGDABAB#",
@@ -54,6 +55,19 @@ public class MainActivity extends Activity {
             "#GDECFEBCFGADAB#",
             "#FFBGECADEGABCD#",
             "#BACAFBGGDDECFE#"
+    };
+    private String[] tests_6 = {
+            "#FEMBMINHQJPKEFOGOJDQCANHIBACLDGPKL#",
+            "#BKELBCQPOINHMFAMDCGGDPAJLFOKQHJNEI#",
+            "#HOCEKQDHCBIOQBAIFDMNPJEGLKFALMPJGN#",
+            "#CLOAGNNJGOCQAHEEKBPIKMMBIDDLFFQJPH#",
+            "#EIQHOFPAGGLJKBMOBJENKQPFCHMNADICDL#",
+            "#KBEDFEAJCFIQPCMDOONJMIHQGABPLKGLNH#",
+            "#QQCKMPFLBCGHODNJKAEIIOGJADNBFPHELM#",
+            "#QHPIFLLMAENMKGCEFHQAIBDGKPCONJJOBD#",
+            "#BBQKAEIMDOOLNHCLCGJKPAQNDMPGIHFFEJ#",
+            "#ICPBOIBKDEEPGGNJOFMMKFDCNQQHAJHLAL#",
+            "#PKNHKIDNEOAFIBPBLAEOFHJDCLMGQCMJGQ#"
     };
 
     //frame data
@@ -98,6 +112,7 @@ public class MainActivity extends Activity {
         }
 
         dot = BitmapFactory.decodeResource(res, R.drawable.dot);
+        cross = BitmapFactory.decodeResource(res, R.drawable.cross);
 
         //initializes SharedPreferences
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -158,10 +173,15 @@ public class MainActivity extends Activity {
                             canvas.drawColor(Color.BLACK);
                             maze.draw();
                             player.draw();
+                            drawMoves();
 
                             if (player.atEnd()) {
-                                maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+                                if (four) maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+                                else maze = new Maze(tests_6[(int)(Math.random()*tests_6.length)]);
+
                                 player.setMaze(maze);
+                                player.reset();
+                            } else if (player.outOfMoves()) {
                                 player.reset();
                             }
 
@@ -211,6 +231,16 @@ public class MainActivity extends Activity {
                     if (diff == maze.size() || diff == 1) player.goTo(i);
                 }
             }
+
+            if (four && X > w()/2 && Y < h()/2-w()/2) {
+                four = false;
+                maze = new Maze(tests_6[(int)(Math.random()*tests_6.length)]);
+                player.setMaze(maze);
+            } else if (!four && X < w()/2 && Y < h()/2-w()/2) {
+                four = true;
+                maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+                player.setMaze(maze);
+            }
         }
 
         return true;
@@ -250,5 +280,27 @@ public class MainActivity extends Activity {
 
     private void drawTitleMenu() {
 
+    }
+
+    private void drawMoves() {
+        float y = h() - (h()-w())/4,
+                r = c480(25),
+                margin = c480(50);
+
+        canvas.save();
+        canvas.translate(0, y);
+        canvas.translate(margin, 0);
+        for (int i = 0; i < maze.getMoves(); i++) {
+            if (i < player.getMoves()) {
+                canvas.drawBitmap(cross, null, new RectF(-r, -r, r, r), null);
+            } else {
+                canvas.save();
+                canvas.rotate(frameCount * 2 % 360);
+                canvas.drawBitmap(dot, null, new RectF(-r, -r, r, r), null);
+                canvas.restore();
+            }
+            canvas.translate((w()-margin*2)/(maze.getMoves()-1), 0);
+        }
+        canvas.restore();
     }
 }
