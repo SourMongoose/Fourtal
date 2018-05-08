@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -27,6 +28,8 @@ public class MainActivity extends Activity {
     private LinearLayout ll;
     private float scaleFactor;
 
+    static Bitmap[] portals4, portals6;
+
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
 
@@ -36,6 +39,17 @@ public class MainActivity extends Activity {
     private long frameCount = 0;
 
     private String menu = "start";
+
+    private Maze maze;
+    private String[] tests_4 = {
+            "#CDBFCAEFBAGEGD#",
+            "#EGCCFDEFGDABAB#",
+            "#GCBEDDCAAFBEGF#",
+            "#DABGBCDGECAEFF#",
+            "#CCGFDGABBFEAED#",
+            "#BFGACEGBAFDECD#",
+            "#EADCGGBCDFBAEF#"
+    };
 
     //frame data
     private static final int FRAMES_PER_SECOND = 60;
@@ -64,6 +78,20 @@ public class MainActivity extends Activity {
         ll = (LinearLayout) findViewById(R.id.draw_area);
         ll.setBackgroundDrawable(new BitmapDrawable(bmp));
 
+        Resources res = getResources();
+        portals4 = new Bitmap[19];
+        portals6 = new Bitmap[portals4.length];
+        portals4[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.portalwhite),
+                Math.round(w()/4),Math.round(w()/4),false);
+        portals6[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.portalwhite),
+                Math.round(w()/6),Math.round(w()/6),false);
+        for (int i = 1; i < portals4.length; i++) {
+            portals4[i] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.portal00+i-1),
+                    Math.round(w()/4),Math.round(w()/4),false);
+            portals6[i] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.portal00+i-1),
+                    Math.round(w()/6),Math.round(w()/6),false);
+        }
+
         //initializes SharedPreferences
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -77,6 +105,8 @@ public class MainActivity extends Activity {
 
         //pre-defined paints
         title = newPaint(Color.WHITE);
+
+        maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
 
 
         final Handler handler = new Handler();
@@ -117,7 +147,8 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-
+                            canvas.drawColor(Color.BLACK);
+                            maze.draw();
 
                             //update canvas
                             ll.invalidate();
@@ -154,6 +185,10 @@ public class MainActivity extends Activity {
         float X = event.getX()*scaleFactor;
         float Y = event.getY()*scaleFactor;
         int action = event.getAction();
+
+        if (action == MotionEvent.ACTION_UP) {
+            maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+        }
 
         return true;
     }
