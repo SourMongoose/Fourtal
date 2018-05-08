@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
     private float scaleFactor;
 
     static Bitmap[] portals4, portals6;
+    static Bitmap dot;
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -40,6 +41,7 @@ public class MainActivity extends Activity {
 
     private String menu = "start";
 
+    private Player player;
     private Maze maze;
     private String[] tests_4 = {
             "#CDBFCAEFBAGEGD#",
@@ -48,7 +50,10 @@ public class MainActivity extends Activity {
             "#DABGBCDGECAEFF#",
             "#CCGFDGABBFEAED#",
             "#BFGACEGBAFDECD#",
-            "#EADCGGBCDFBAEF#"
+            "#EADCGGBCDFBAEF#",
+            "#GDECFEBCFGADAB#",
+            "#FFBGECADEGABCD#",
+            "#BACAFBGGDDECFE#"
     };
 
     //frame data
@@ -92,6 +97,8 @@ public class MainActivity extends Activity {
                     Math.round(w()/6),Math.round(w()/6),false);
         }
 
+        dot = BitmapFactory.decodeResource(res, R.drawable.dot);
+
         //initializes SharedPreferences
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -107,6 +114,7 @@ public class MainActivity extends Activity {
         title = newPaint(Color.WHITE);
 
         maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+        player = new Player(maze);
 
 
         final Handler handler = new Handler();
@@ -149,6 +157,13 @@ public class MainActivity extends Activity {
                         public void run() {
                             canvas.drawColor(Color.BLACK);
                             maze.draw();
+                            player.draw();
+
+                            if (player.atEnd()) {
+                                maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+                                player.setMaze(maze);
+                                player.reset();
+                            }
 
                             //update canvas
                             ll.invalidate();
@@ -186,8 +201,16 @@ public class MainActivity extends Activity {
         float Y = event.getY()*scaleFactor;
         int action = event.getAction();
 
-        if (action == MotionEvent.ACTION_UP) {
-            maze = new Maze(tests_4[(int)(Math.random()*tests_4.length)]);
+        if (action == MotionEvent.ACTION_DOWN) {
+            for (int i = 0; i < maze.size()*maze.size(); i++) {
+                float w = w() / maze.size();
+                float x = (i%maze.size()) * w,
+                        y = h()/2 + (i/maze.size()-maze.size()/2) * w;
+                if (X > x && X < x+w && Y > y && Y < y+w) {
+                    int diff = Math.abs(player.getPos() - i);
+                    if (diff == maze.size() || diff == 1) player.goTo(i);
+                }
+            }
         }
 
         return true;

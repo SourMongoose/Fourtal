@@ -13,6 +13,18 @@ class Maze {
         }
     }
 
+    int size() {
+        return (int)Math.round(Math.sqrt(arr.length));
+    }
+
+    int match(int i) {
+        if (i == 0 || i == arr.length-1) return i;
+        for (int x = 0; x < arr.length; x++) {
+            if (arr[x] == arr[i] && i != x) return x;
+        }
+        return -1;
+    }
+
     void draw() {
         if (arr.length == 16) {
             for (int i = 0; i < arr.length; i++) {
