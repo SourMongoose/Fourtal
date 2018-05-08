@@ -1,5 +1,8 @@
 package com.chrisx.fourtal;
 
+import android.graphics.Paint;
+import android.graphics.RectF;
+
 import java.util.ArrayList;
 
 class Maze {
@@ -7,6 +10,7 @@ class Maze {
 
     private int[] arr;
     private int moves;
+    private Paint opacity;
 
     Maze(String s) {
         //ex. #KNHCADBEIGPOLOCMMJFQLGNHBQPEADKIFJ#
@@ -16,6 +20,9 @@ class Maze {
         }
 
         moves = calcMoves();
+
+        opacity = new Paint();
+        opacity.setAlpha(200);
     }
 
     private int calcMoves() {
@@ -70,6 +77,11 @@ class Maze {
     }
 
     void draw() {
+        float w = MainActivity.w() / size();
+        float brX = MainActivity.w() - w/2;
+        float brY = MainActivity.h()/2 + MainActivity.w()/2 - w/2;
+        MainActivity.canvas.drawBitmap(MainActivity.finish, null, new RectF(brX-w/2,brY-w/2,brX+w/2,brY+w/2), opacity);
+
         if (arr.length == 16) {
             for (int i = 0; i < arr.length; i++) {
                 float x = (i%4) * MainActivity.w()/4,
