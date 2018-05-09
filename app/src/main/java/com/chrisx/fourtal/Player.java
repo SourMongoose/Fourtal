@@ -37,6 +37,10 @@ class Player {
         return animation < ANIMATION_MAX / 2 && pos != maze.size()*maze.size()-1 && moves == maze.getMoves();
     }
 
+    void setAnimation(int i) {
+        animation = i;
+    }
+
     void goTo(int p) {
         if (animation > 0) return;
 
