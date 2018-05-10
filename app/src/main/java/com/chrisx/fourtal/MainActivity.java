@@ -19,7 +19,6 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,8 +26,6 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class MainActivity extends Activity {
     private Bitmap bmp;
@@ -452,7 +449,7 @@ public class MainActivity extends Activity {
 
         return true;
     }
-    
+
     private Point getAppUsableScreenSize(Context context) {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
