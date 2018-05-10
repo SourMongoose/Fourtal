@@ -106,7 +106,7 @@ public class MainActivity extends Activity {
         finish = BitmapFactory.decodeResource(res, R.drawable.checkers);
 
         levelsMargin = c480(20);
-        int tmp = Math.round((h()-c854(250))/rowsPerPage);
+        int tmp = Math.min(Math.round((h()-c854(250))/rowsPerPage), Math.round(w()/levelsPerRow));
         green = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.square_green),
                 tmp, tmp, false);
         blue = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.square_blue),
@@ -957,13 +957,13 @@ public class MainActivity extends Activity {
 
     private void drawLevels() {
         int lpr = levelsPerRow, rpp = rowsPerPage;
-        float w = (h()-c854(250))/rpp;
-        float lm = (w()-lpr*w)/2;
+        float w = Math.min((h()-c854(250))/rpp, w()/lpr);
+        float lm = (w()-lpr*w)/2, tm = c854(150) + (h()-c854(250)-rpp*w)/2; //left and top margins
 
         for (int i = page*lpr*rpp; i < Math.min((page+1)*lpr*rpp,nLevels()); i++) {
             Bitmap bmp = completed(i+1) ? green : unlocked(i+1) ? blue : gray;
-            canvas.drawBitmap(bmp, lm+i%lpr*w, c854(150)+(i-page*lpr*rpp)/lpr*w, null);
-            canvas.drawText(i+1+"",lm+i%lpr*w+w/2,c854(150)+(i-page*lpr*rpp)/lpr*w+w/2-(ls.ascent()+ls.descent())/2, ls);
+            canvas.drawBitmap(bmp, lm+i%lpr*w, tm+(i-page*lpr*rpp)/lpr*w, null);
+            canvas.drawText(i+1+"", lm+i%lpr*w+w/2, tm+(i-page*lpr*rpp)/lpr*w+w/2-(ls.ascent()+ls.descent())/2, ls);
         }
 
         canvas.drawRect(0,0,w(),c854(150),bg);
