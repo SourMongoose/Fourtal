@@ -75,10 +75,10 @@ public class MainActivity extends Activity {
 
         //creates the bitmap
         //note: Star 4.5 is 480x854
-        int targetH = 854,
+        int targetH = 854, targetW = 480,
                 wpx = Resources.getSystem().getDisplayMetrics().widthPixels,
                 hpx = Resources.getSystem().getDisplayMetrics().heightPixels;
-        scaleFactor = Math.min(1,(float)targetH/hpx);
+        scaleFactor = Math.min(1,(float)targetW/wpx);
         bmp = Bitmap.createBitmap(Math.round(wpx*scaleFactor),Math.round(hpx*scaleFactor),Bitmap.Config.RGB_565);
 
         //creates canvas
