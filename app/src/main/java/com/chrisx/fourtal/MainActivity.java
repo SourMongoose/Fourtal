@@ -65,7 +65,8 @@ public class MainActivity extends Activity {
     private float downX, downY;
 
     private int background = Color.rgb(20,20,20);
-    private Paint title, start, banner, shadow, mode, steps, progress, bg, ls;
+    private Paint title, start, banner, shadow, tutorial, mode, steps, progress, bg, ls, line,
+            tutorialText, tutorialBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +144,8 @@ public class MainActivity extends Activity {
         shadow = newPaint(shadowColor);
         bannerWidth = c854(140);
 
+        tutorial = newPaint(Color.rgb(230,25,75));
+
         mode = new Paint(title);
         mode.setTextSize(c854(70));
         steps = new Paint(mode);
@@ -155,6 +158,14 @@ public class MainActivity extends Activity {
 
         ls = new Paint(title);
         ls.setTextSize(c854(50));
+
+        line = newPaint(Color.WHITE);
+        line.setStyle(Paint.Style.STROKE);
+        line.setStrokeWidth(c854(3));
+
+        tutorialText = newPaint(Color.WHITE);
+        tutorialText.setTextSize(c480(30));
+        tutorialBox = newPaint(Color.argb(150,0,0,0));
 
         initMazes();
 
@@ -183,6 +194,10 @@ public class MainActivity extends Activity {
                                             else goToMenu("levels");
                                         } else if (player.outOfMoves()) {
                                             player.reset();
+                                        }
+                                    } else if (menu.equals("tutorial")) {
+                                        if (player.atEnd()) {
+                                            goToMenu("modes");
                                         }
                                     }
                                 }
@@ -237,6 +252,51 @@ public class MainActivity extends Activity {
                                         canvas.translate(w()-c854(100),0);
                                         canvas.drawBitmap(restart,-c854(25),-c854(25),null);
                                         canvas.restore();
+                                    } else if (menu.equals("tutorial")) {
+                                        maze.draw();
+                                        if (transition == 0) player.draw();
+                                        drawMoves();
+
+                                        float y = h()/2 - w()/2;
+                                        canvas.save();
+                                        canvas.translate(0,y);
+                                        if (player.getPos() == 0) {
+                                            canvas.drawRect(c480(180),c480(35),c480(350),c480(85),tutorialBox);
+                                            canvas.drawText("This is you.",c480(190),c480(75),tutorialText);
+                                            canvas.drawLine(c480(60),c480(60),c480(180),c480(60),line);
+
+                                            canvas.drawRect(c480(30),c480(275),c480(390),c480(325),tutorialBox);
+                                            canvas.drawText("Tap here to get started!",c480(40),c480(315),tutorialText);
+                                            canvas.drawLine(c480(60),c480(180),c480(60),c480(275),line);
+                                        } else if (player.getPos() == 6) {
+                                            canvas.drawRect(c480(30),c480(30),c480(270),c480(200),tutorialBox);
+                                            canvas.drawText("Every turn,",c480(40),c480(70),tutorialText);
+                                            canvas.drawText("you can",c480(40),c480(100),tutorialText);
+                                            canvas.drawText("move up, left,",c480(40),c480(130),tutorialText);
+                                            canvas.drawText("right, or down.",c480(40),c480(160),tutorialText);
+                                            canvas.drawText("Let's go up!",c480(40),c480(190),tutorialText);
+
+                                            canvas.drawRect(c480(30),c480(390),c480(390),c480(470),tutorialBox);
+                                            canvas.drawText("Below are the number",c480(40),c480(430),tutorialText);
+                                            canvas.drawText("of moves you have left.",c480(40),c480(460),tutorialText);
+                                        } else if (player.getPos() == 13) {
+                                            canvas.drawRect(c480(30),c480(120),c480(420),c480(320),tutorialBox);
+                                            canvas.drawText("If you couldn't tell, pairs",c480(40),c480(160),tutorialText);
+                                            canvas.drawText("of colored portals are",c480(40),c480(190),tutorialText);
+                                            canvas.drawText("connected! Entering one",c480(40),c480(220),tutorialText);
+                                            canvas.drawText("will cause you to exit out",c480(40),c480(250),tutorialText);
+                                            canvas.drawText("the other. Let's see if",c480(40),c480(280),tutorialText);
+                                            canvas.drawText("you can do the rest!",c480(40),c480(310),tutorialText);
+                                            canvas.drawLine(c480(250),c480(60),c480(180),c480(60),line);
+                                            canvas.drawLine(c480(180),c480(60),c480(180),c480(120),line);
+                                            canvas.drawLine(c480(180),c480(320),c480(180),c480(370),line);
+                                        }
+                                        canvas.restore();
+
+                                        canvas.save();
+                                        canvas.translate(c854(50),c854(50));
+                                        canvas.drawBitmap(back,-c854(25),-c854(25),null);
+                                        canvas.restore();
                                     }
                                 }
 
@@ -280,7 +340,7 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (menu.equals("modes")) {
             goToMenu("start");
-        } else if (menu.equals("levels")) {
+        } else if (menu.equals("levels") || menu.equals("tutorial")) {
             goToMenu("modes");
         } else if (menu.equals("game")) {
             goToMenu("levels");
@@ -317,6 +377,10 @@ public class MainActivity extends Activity {
                         && downY > h()*3/4-bannerWidth/2 && downY < h()*3/4+bannerWidth/2) {
                     gamemode = "6x6_6";
                     goToMenu("levels");
+                }
+
+                if (X > w()/4 && X < w()*3/4 && Y < (h()/4-bannerWidth/2)/2) {
+                    goToMenu("tutorial");
                 }
 
                 if (Y > h()-c854(100) && X > w()/2-c854(50) && X < w()/2+c854(50)) onBackPressed();
@@ -357,6 +421,21 @@ public class MainActivity extends Activity {
                         int diff = Math.abs(player.getPos() - i);
                         if (diff == maze.size() || diff == 1) player.goTo(i);
                     }
+                }
+            } else if (action == MotionEvent.ACTION_UP) {
+                if (X < c854(100) && Y < c854(100)) onBackPressed();
+            }
+        } else if (menu.equals("tutorial")) {
+            if (action == MotionEvent.ACTION_DOWN) {
+                float y = h()/2 - w()/2;
+                if (player.getPos() == 0 && X < w()/4 && Y > y+w()/4 && Y < y+w()/2) {
+                    player.goTo(4);
+                } else if (player.getPos() == 6 && X > w()/2 && X < w()*3/4 && Y > y && Y < y+w()/4) {
+                    player.goTo(2);
+                } else if (player.getPos() == 13 && X > w()/2 && X < w()*3/4 && Y > y+w()*3/4 && Y < y+w()) {
+                    player.goTo(14);
+                } else if (player.getPos() == 11 && X > w()*3/4 && Y > y+w()*3/4 && Y < y+w()) {
+                    player.goTo(15);
                 }
             } else if (action == MotionEvent.ACTION_UP) {
                 if (X < c854(100) && Y < c854(100)) onBackPressed();
@@ -459,6 +538,12 @@ public class MainActivity extends Activity {
                 while (completed(i) && i <= nLevels()) i++;
                 if (i <= nLevels()) page = (i-1)/(rowsPerPage*levelsPerRow);
             }
+        }
+
+        if (s.equals("tutorial")) {
+            maze = new Maze("#FBCAFADGGCEDBE#");
+            player = new Player(maze);
+            player.setAnimation(FRAMES_PER_SECOND/2);
         }
 
         menu = s;
@@ -863,6 +948,9 @@ public class MainActivity extends Activity {
 
         tri(margin-1,h()/4-w/2+1,margin*2,h()/4,margin-1,h()/4+w/2+1,bg);
         tri(w()-margin+1,h()*3/4+w/2+1,w()-margin*2,h()*3/4,w()-margin+1,h()*3/4-w/2-1,bg);
+
+        canvas.drawRect(w()/4,0,w()*3/4,(h()/4-bannerWidth/2)/2,tutorial);
+        canvas.drawText("TUTORIAL",w()/2,(h()/4-bannerWidth/2)/4-(progress.ascent()+progress.descent())/2,progress);
 
         canvas.drawBitmap(back, w()/2-c854(25), h()-c854(75), null);
     }
