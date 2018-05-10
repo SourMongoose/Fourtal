@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
     private float downX, downY;
 
     private int background = Color.rgb(20,20,20);
-    private Paint title, start, banner, shadow, mode, steps, bg, ls;
+    private Paint title, start, banner, shadow, mode, steps, progress, bg, ls;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,13 +141,15 @@ public class MainActivity extends Activity {
         int shadowColor = Color.rgb(Color.red(bannerColor)/2,Color.green(bannerColor)/2,Color.blue(bannerColor)/2);
         banner = newPaint(bannerColor);
         shadow = newPaint(shadowColor);
-        bannerWidth = c854(120);
+        bannerWidth = c854(140);
 
         mode = new Paint(title);
         mode.setTextSize(c854(70));
         steps = new Paint(mode);
         steps.setColor(Color.rgb(220,220,240));
         steps.setTextSize(c854(30));
+        progress = new Paint(steps);
+        progress.setColor(Color.WHITE);
 
         bg = newPaint(background);
 
@@ -384,7 +386,13 @@ public class MainActivity extends Activity {
     private int nLevels() {
         return gamemode.equals("4x4_4") ? 150 : 100;
     }
+    private int nLevels(String gm) {
+        return gm.equals("4x4_4") ? 150 : 100;
+    }
 
+    private boolean completed(String gm, int level) {
+        return sharedPref.getBoolean("completed_"+gm+"_"+level, false);
+    }
     private boolean completed(int level) {
         return sharedPref.getBoolean("completed_"+gamemode+"_"+level, false);
     }
@@ -394,6 +402,14 @@ public class MainActivity extends Activity {
             if (!completed(i)) nMissing++;
         }
         return nMissing < 5;
+    }
+
+    private int nCompleted(String gm) {
+        int c = 0;
+        for (int i = 1; i <= nLevels(gm); i++) {
+            if (completed(gm, i)) c++;
+        }
+        return c;
     }
 
     static float c480(float f) {
@@ -835,12 +851,15 @@ public class MainActivity extends Activity {
         canvas.drawRect(margin,h()/2-w/2,w()-margin,h()/2+w/2,banner);
         canvas.drawRect(margin,h()*3/4-w/2,w()-margin,h()*3/4+w/2,banner);
 
-        canvas.drawText("4x4",w()/2,h()/4+c854(20),mode);
-        canvas.drawText("4 moves",w()/2,h()/4+c854(40),steps);
-        canvas.drawText("6x6",w()/2,h()/2+c854(20),mode);
-        canvas.drawText("5 moves",w()/2,h()/2+c854(40),steps);
-        canvas.drawText("6x6",w()/2,h()*3/4+c854(20),mode);
-        canvas.drawText("6 moves",w()/2,h()*3/4+c854(40),steps);
+        canvas.drawText("4x4",w()/2,h()/4,mode);
+        canvas.drawText("4 moves",w()/2,h()/4+c854(25),steps);
+        canvas.drawText(nCompleted("4x4_4")+" / 150",w()/2,h()/4+c854(55),progress);
+        canvas.drawText("6x6",w()/2,h()/2,mode);
+        canvas.drawText("5 moves",w()/2,h()/2+c854(25),steps);
+        canvas.drawText(nCompleted("6x6_5")+" / 100",w()/2,h()/2+c854(55),progress);
+        canvas.drawText("6x6",w()/2,h()*3/4,mode);
+        canvas.drawText("6 moves",w()/2,h()*3/4+c854(25),steps);
+        canvas.drawText(nCompleted("6x6_6")+" / 100",w()/2,h()*3/4+c854(55),progress);
 
         tri(margin,h()/4-w/2,margin*2,h()/4,margin,h()/4+w/2,bg);
         tri(w()-margin,h()*3/4+w/2,w()-margin*2,h()*3/4,w()-margin,h()*3/4-w/2,bg);
