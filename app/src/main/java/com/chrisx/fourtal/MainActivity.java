@@ -15,14 +15,20 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class MainActivity extends Activity {
     private Bitmap bmp;
@@ -76,8 +82,10 @@ public class MainActivity extends Activity {
         //creates the bitmap
         //note: Star 4.5 is 480x854
         int targetH = 854, targetW = 480,
-                wpx = Resources.getSystem().getDisplayMetrics().widthPixels,
-                hpx = Resources.getSystem().getDisplayMetrics().heightPixels;
+                wpx = getAppUsableScreenSize(this).x,
+                hpx = getAppUsableScreenSize(this).y;
+                //wpx = Resources.getSystem().getDisplayMetrics().widthPixels,
+                //hpx = Resources.getSystem().getDisplayMetrics().heightPixels;
         scaleFactor = Math.min(1,(float)targetW/wpx);
         bmp = Bitmap.createBitmap(Math.round(wpx*scaleFactor),Math.round(hpx*scaleFactor),Bitmap.Config.RGB_565);
 
@@ -443,6 +451,14 @@ public class MainActivity extends Activity {
         }
 
         return true;
+    }
+    
+    private Point getAppUsableScreenSize(Context context) {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size;
     }
 
     //shorthand for w() and h()
