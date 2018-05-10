@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
     private float downX, downY;
 
     private int background = Color.rgb(20,20,20);
-    private Paint title, start, banner, shadow, mode, steps, bg;
+    private Paint title, start, banner, shadow, mode, steps, bg, ls;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
         finish = BitmapFactory.decodeResource(res, R.drawable.checkers);
 
         levelsMargin = c480(20);
-        int tmp = Math.round((w()-levelsMargin*2) / levelsPerRow);
+        int tmp = Math.round((h()-c854(250))/rowsPerPage);
         green = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.square_green),
                 tmp, tmp, false);
         blue = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.square_blue),
@@ -116,9 +116,9 @@ public class MainActivity extends Activity {
         triangle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.triangle),
                 Math.round(c854(75)), Math.round(c854(75)), false);
         restart = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.restart),
-                Math.round(c854(75)), Math.round(c854(75)), false);
+                Math.round(c854(50)), Math.round(c854(50)), false);
         back = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.back),
-                Math.round(c854(75)), Math.round(c854(75)), false);
+                Math.round(c854(50)), Math.round(c854(50)), false);
 
         //initializes SharedPreferences
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -151,6 +151,9 @@ public class MainActivity extends Activity {
 
         bg = newPaint(background);
 
+        ls = new Paint(title);
+        ls.setTextSize(c854(50));
+
         initMazes();
 
 
@@ -170,8 +173,12 @@ public class MainActivity extends Activity {
                                 if (transition < TRANSITION_MAX / 2) {
                                     if (menu.equals("game")) {
                                         if (player.atEnd()) {
-                                            player.setMaze(maze);
-                                            player.reset();
+                                            editor.putBoolean("completed_"+gamemode+"_"+level, true);
+                                            editor.apply();
+
+                                            int maxLevel = nLevels();
+                                            if (level != maxLevel) goToLevel(level+1);
+                                            else goToMenu("levels");
                                         } else if (player.outOfMoves()) {
                                             player.reset();
                                         }
@@ -220,13 +227,13 @@ public class MainActivity extends Activity {
                                         if (transition == 0) player.draw();
                                         drawMoves();
 
-
+                                        canvas.drawText(level+"",w()/2,c854(50)-(mode.ascent()+mode.descent())/2,mode);
 
                                         canvas.save();
-                                        canvas.translate(c854(75),c854(75));
-                                        canvas.drawBitmap(back,-c854(37.5f),-c854(37.5f),null);
-                                        canvas.translate(w()-c854(150),0);
-                                        canvas.drawBitmap(restart,-c854(37.5f),-c854(37.5f),null);
+                                        canvas.translate(c854(50),c854(50));
+                                        canvas.drawBitmap(back,-c854(25),-c854(25),null);
+                                        canvas.translate(w()-c854(100),0);
+                                        canvas.drawBitmap(restart,-c854(25),-c854(25),null);
                                         canvas.restore();
                                     }
                                 }
@@ -309,13 +316,15 @@ public class MainActivity extends Activity {
                     gamemode = "6x6_6";
                     goToMenu("levels");
                 }
+
+                if (Y > h()-c854(100) && X > w()/2-c854(50) && X < w()/2+c854(50)) onBackPressed();
             }
         } else if (menu.equals("levels")) {
             if (action == MotionEvent.ACTION_DOWN) {
                 if (X < c854(150) && Y < c854(150)) {
                     page = Math.max(0,page-1);
                 } else if (X > w()-c854(150) && Y < c854(150)) {
-                    int maxPage = (gamemode.equals("4x4_4") ? 150 : 100) / (levelsPerRow*rowsPerPage);
+                    int maxPage = (nLevels()) / (levelsPerRow*rowsPerPage);
                     page = Math.min(page+1,maxPage);
                 }
 
@@ -323,19 +332,20 @@ public class MainActivity extends Activity {
                 float w = (h()-c854(250))/rpp;
                 float lm = (w()-lpr*w)/2;
 
-                int maxPages = gamemode.equals("4x4_4") ? 150 : 100;
+                int maxPages = nLevels();
                 for (int i = page*lpr*rpp; i < Math.min((page+1)*lpr*rpp,maxPages); i++) {
                     float topX = lm+i%lpr*w, topY = c854(150)+(i-page*lpr*rpp)/lpr*w;
-                    if (X > topX && X < topX+w && Y > topY && Y < topY+w) {
+                    if (X > topX && X < topX+w && Y > topY && Y < topY+w && unlocked(i+1)) {
                         goToMenu("game");
                         goToLevel(i+1);
                     }
                 }
+            } else if (action == MotionEvent.ACTION_UP) {
+                if (Y > h()-c854(100) && X > w()/2-c854(50) && X < w()/2+c854(50)) onBackPressed();
             }
         } else if (menu.equals("game")) {
             if (action == MotionEvent.ACTION_DOWN) {
-                if (X < c854(150) && Y < c854(150)) goToMenu("levels");
-                else if (X > w()-c854(150) && Y < c854(150)) player.reset();
+                if (X > w()-c854(100) && Y < c854(100)) player.reset();
 
                 for (int i = 0; i < maze.size() * maze.size(); i++) {
                     float w = w() / maze.size();
@@ -346,6 +356,8 @@ public class MainActivity extends Activity {
                         if (diff == maze.size() || diff == 1) player.goTo(i);
                     }
                 }
+            } else if (action == MotionEvent.ACTION_UP) {
+                if (X < c854(100) && Y < c854(100)) onBackPressed();
             }
         }
 
@@ -367,6 +379,10 @@ public class MainActivity extends Activity {
         p.setTypeface(re);
 
         return p;
+    }
+
+    private int nLevels() {
+        return gamemode.equals("4x4_4") ? 150 : 100;
     }
 
     private boolean completed(int level) {
@@ -421,8 +437,12 @@ public class MainActivity extends Activity {
         transition = TRANSITION_MAX;
 
         if (s.equals("levels")) {
-            start.setAlpha(255);
-            page = 0;
+            if (menu.equals("modes")) {
+                page = 0;
+                int i = 1;
+                while (completed(i) && i <= nLevels()) i++;
+                if (i <= nLevels()) page = (i-1)/(rowsPerPage*levelsPerRow);
+            }
         }
 
         menu = s;
@@ -824,6 +844,8 @@ public class MainActivity extends Activity {
 
         tri(margin,h()/4-w/2,margin*2,h()/4,margin,h()/4+w/2,bg);
         tri(w()-margin,h()*3/4+w/2,w()-margin*2,h()*3/4,w()-margin,h()*3/4-w/2,bg);
+
+        canvas.drawBitmap(back, w()/2-c854(25), h()-c854(75), null);
     }
 
     private void drawLevels() {
@@ -831,31 +853,30 @@ public class MainActivity extends Activity {
         float w = (h()-c854(250))/rpp;
         float lm = (w()-lpr*w)/2;
 
-        int maxPages = gamemode.equals("4x4_4") ? 150 : 100;
-        for (int i = page*lpr*rpp; i < Math.min((page+1)*lpr*rpp,maxPages); i++) {
+        for (int i = page*lpr*rpp; i < Math.min((page+1)*lpr*rpp,nLevels()); i++) {
             Bitmap bmp = completed(i+1) ? green : unlocked(i+1) ? blue : gray;
             canvas.drawBitmap(bmp, lm+i%lpr*w, c854(150)+(i-page*lpr*rpp)/lpr*w, null);
-            canvas.drawText(i+1+"",lm+i%lpr*w+w/2,c854(150)+(i-page*lpr*rpp)/lpr*w+w/2-(start.ascent()+start.descent())/2, start);
+            canvas.drawText(i+1+"",lm+i%lpr*w+w/2,c854(150)+(i-page*lpr*rpp)/lpr*w+w/2-(ls.ascent()+ls.descent())/2, ls);
         }
 
         canvas.drawRect(0,0,w(),c854(150),bg);
-        canvas.drawText("LEVEL",w()/2,c854(75),start);
-        canvas.drawText("SELECT",w()/2,c854(120),start);
+        canvas.drawText("LEVEL",w()/2,c854(75),ls);
+        canvas.drawText("SELECT",w()/2,c854(120),ls);
 
         canvas.save();
         canvas.translate(c854(75),c854(75));
-        canvas.drawBitmap(triangle,-c854(37.5f),-c854(37.5f),null);
-        canvas.restore();
-        canvas.save();
-        canvas.translate(w()-c854(75),c854(75));
+        if (page > 0) canvas.drawBitmap(triangle,-c854(37.5f),-c854(37.5f),null);
+        canvas.translate(w()-c854(150),0);
         canvas.rotate(180);
-        canvas.drawBitmap(triangle,-c854(37.5f),-c854(37.5f),null);
+        if (page < nLevels()/(lpr*rpp)) canvas.drawBitmap(triangle,-c854(37.5f),-c854(37.5f),null);
         canvas.restore();
+
+        canvas.drawBitmap(back, w()/2-c854(25), h()-c854(75), null);
     }
 
     private void drawMoves() {
         float y = h() - (h()-w())/4,
-                r = c480(25),
+                r = w()/24,
                 margin = c480(60);
 
         canvas.save();
