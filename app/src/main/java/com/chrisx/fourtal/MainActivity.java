@@ -861,8 +861,8 @@ public class MainActivity extends Activity {
         canvas.drawText("6 moves",w()/2,h()*3/4+c854(25),steps);
         canvas.drawText(nCompleted("6x6_6")+" / 100",w()/2,h()*3/4+c854(55),progress);
 
-        tri(margin,h()/4-w/2,margin*2,h()/4,margin,h()/4+w/2,bg);
-        tri(w()-margin,h()*3/4+w/2,w()-margin*2,h()*3/4,w()-margin,h()*3/4-w/2,bg);
+        tri(margin-1,h()/4-w/2+1,margin*2,h()/4,margin-1,h()/4+w/2+1,bg);
+        tri(w()-margin+1,h()*3/4+w/2+1,w()-margin*2,h()*3/4,w()-margin+1,h()*3/4-w/2-1,bg);
 
         canvas.drawBitmap(back, w()/2-c854(25), h()-c854(75), null);
     }
